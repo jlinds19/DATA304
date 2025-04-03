@@ -1,0 +1,100 @@
+**Project Proposal**
+
+### **Statement of Problem**
+
+#### **Proposed Solution**
+
+**Background:**
+Gaming on Linux has historically been a challenge due to software compatibility issues. Many users hesitate to switch from Windows to Linux because they are unsure if their favorite games will work properly. ProtonDB, a community-driven database, tracks game compatibility with Proton, a compatibility layer developed by Valve to run Windows games on Linux. However, while ProtonDB provides an overview of current ratings, it does not offer a historical analysis of how game compatibility has improved over time. This lack of historical data makes it difficult to showcase the progress Linux gaming has made and to persuade potential users to switch.
+
+**Data Context:**
+The data for this project will come primarily from ProtonDB. Since ProtonDB does not provide a built-in time series analysis, historical data must be gathered through web scraping. If ProtonDB’s HTML structure contains timestamps, those will be extracted. Additionally, if ProtonDB access presents challenges, the **Wayback Machine** (web archive snapshots) will be used as an alternative data source to reconstruct historical data. The dataset will consist of game titles, their compatibility ratings over time (e.g., Platinum, Gold, Silver, Bronze, Borked), and possibly user reports detailing performance improvements.
+
+**Impact of Problem:**
+Without access to historical compatibility data, Linux gaming remains a hard sell for potential switchers. Many users rely on outdated perceptions of poor gaming support on Linux, leading them to dismiss it as a viable option. By analyzing ProtonDB data over time, this project will highlight the improvements made in game compatibility and performance, providing clear evidence that Linux has become a competitive gaming platform.
+
+### **Proposed Solution**
+
+This project will implement a data pipeline that extracts, processes, and visualizes ProtonDB data over time to showcase the improvements in Linux gaming.
+
+- **Data Collection:**
+
+  - Scrape ProtonDB for current compatibility ratings and extract any available timestamps.
+  - If direct ProtonDB access presents issues, use the Wayback Machine API to retrieve historical snapshots of ProtonDB pages.
+  - Parse and structure the extracted data into a time series dataset.
+
+- **Data Transformation:**
+
+  - Clean and standardize game titles and compatibility labels.
+  - Aggregate compatibility data to track trends over time.
+  - Store processed data in an **SQLite database** for efficient querying.
+
+- **Tools and Techniques:**
+
+  - **Web Scraping:** Python with **BeautifulSoup** and **Scrapy** for extracting ProtonDB data.
+  - **Data Transformation:** Pandas for cleaning and structuring data.
+  - **Storage:** SQLite for structured storage of historical compatibility trends.
+  - **Visualization:** Matplotlib and Seaborn for trend analysis.
+
+- **Architecture:**
+
+  - **ProtonDB Scraping (Primary) / Wayback Machine (Alternative) → Data Cleaning (Pandas) → Storage (SQLite) → Analysis & Visualization (Matplotlib/Seaborn)**
+
+- **Data Output:**
+
+  - The final output will include **visualizations** showing ProtonDB ratings over time, trend reports, and possibly an interactive dashboard displaying the evolution of compatibility ratings.
+
+### **Value Proposition**
+
+**Efficiency:**
+
+- Automating data collection eliminates the need for manual tracking of game compatibility.
+- Centralized storage allows for quick access to historical trends.
+
+**Insights:**
+
+- Users will be able to see how gaming compatibility has improved over time, providing reassurance that Linux is becoming a viable gaming platform.
+- The data could be used by developers and advocates to push for further Linux gaming support.
+
+**Return on Investment (ROI):**
+
+- While not a commercial project, the insights gained could help **increase Linux adoption rates** by addressing a key barrier (gaming compatibility concerns).
+
+**Strategic Value:**
+
+- Aligns with the broader goal of increasing Linux adoption by dispelling outdated myths about poor gaming support.
+- Supports open-source gaming communities by providing data-driven insights.
+
+### **Timeline and Resources**
+
+**Timeline:**
+
+- **Week 1:** Research ProtonDB structure and analyze available data sources.
+- **Week 2:** Implement web scraping and collect historical data from ProtonDB (Wayback Machine as backup).
+- **Week 3:** Clean and process data into a structured time series format.
+- **Week 4:** Store transformed data in an SQLite database.
+- **Week 5:** Develop visualization tools and trend analysis.
+- **Week 6:** Compile findings into a report and/or interactive dashboard.
+
+**Resources:**
+
+- **Human Resources:**
+
+  - Self-directed project (1 person) with expertise in **web scraping, data wrangling, and visualization**.
+
+- **Software & Hardware:**
+
+  - Python (BeautifulSoup, Scrapy, Pandas, Matplotlib, Seaborn)
+  - SQLite for data storage
+  - Local or cloud-based computing resources for processing data
+
+- **Data Access:**
+
+  - ProtonDB website (scraping terms must be respected)
+  - Wayback Machine API (alternative data source for historical data retrieval)
+
+---
+
+This project will provide a **compelling, data-driven argument** showcasing how far Linux gaming has come, helping to persuade skeptical users that Linux is a viable gaming platform.
+
+
