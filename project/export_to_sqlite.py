@@ -1,92 +1,63 @@
 import json
 import sqlite3
-from datetime import datetime
-import time
+from tqdm import tqdm
+import os
 
-start_time = time.time()
-
-# Load JSON data
+# Load JSON File
 with open("reports_piiremoved.json", "r") as f:
     data = json.load(f)
 
-# Connect to (or create) SQLite database
-conn = sqlite3.connect("protondb_reports.sqlite")
+# Flatten function using dot-paths
+def flatten_json(y, prefix=''):
+    out = {}
+    if isinstance(y, dict):
+        for k in y:
+            out.update(flatten_json(y[k], f"{prefix}{k}."))  # add dot
+    elif isinstance(y, list):
+        for i, item in enumerate(y):
+            out.update(flatten_json(item, f"{prefix}{i}."))  # use index
+    else:
+        out[prefix[:-1]] = y  # remove trailing dot
+    return out
+
+# Get all unique fields from dataset
+unique_fields = set()
+flat_data = []
+for entry in data:
+    flat = flatten_json(entry)
+    flat_data.append(flat)
+    unique_fields.update(flat.keys())
+
+columns = sorted(unique_fields)
+
+# Create SQLite Database
+conn = sqlite3.connect("proton_reports.sqlite")
 cursor = conn.cursor()
 
-# Create schema
-cursor.executescript("""
-CREATE TABLE IF NOT EXISTS games (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    app_id TEXT,
-    title TEXT
-);
+# Escape any SQLite-incompatible column names
+def safe_sqlite_colname(name):
+    return f'"{name}"'
 
+column_defs = ",\n".join(f"{safe_sqlite_colname(col)} TEXT" for col in columns)
+
+cursor.execute(f'''
 CREATE TABLE IF NOT EXISTS reports (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    game_id INTEGER,
-    timestamp INTEGER,
-    date TEXT,
-    verdict TEXT,
-    launcher TEXT,
-    proton_version TEXT,
-    type TEXT,
-    FOREIGN KEY (game_id) REFERENCES games(id)
-);
+{column_defs}
+)
+''')
 
-CREATE TABLE IF NOT EXISTS notes (
-    report_id INTEGER,
-    notes_combined TEXT,
-    FOREIGN KEY (report_id) REFERENCES reports(id)
-);
-""")
+# Insert Data with tqdm
+placeholders = ", ".join(["?"] * len(columns))
+column_list = ", ".join(safe_sqlite_colname(col) for col in columns)
 
-# Helper function to create or get game ID
-def get_or_create_game(app_id, title):
-    cursor.execute("SELECT id FROM games WHERE app_id = ?", (app_id,))
-    result = cursor.fetchone()
-    if result:
-        return result[0]
-    cursor.execute("INSERT INTO games (app_id, title) VALUES (?, ?)", (app_id, title))
-    return cursor.lastrowid
+for flat in tqdm(flat_data, desc="Inserting JSON rows"):
+    row = [flat.get(col, None) for col in columns]
+    cursor.execute(f'''
+        INSERT INTO reports ({column_list}) VALUES ({placeholders})
+    ''', row)
 
-# Insert data into database
-for entry in data:
-    game_info = entry.get("steam", {})
-    app_id = game_info.get("appId")
-    title = entry.get("title", "Unknown")
-
-    game_id = get_or_create_game(app_id, title)
-
-    timestamp = entry.get("timestamp")
-    if not timestamp:
-        continue
-
-    date_str = datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d')
-
-    responses = entry.get("responses", {})
-    verdict = responses.get("verdict")
-    launcher = responses.get("launcher")
-    proton_version = responses.get("protonVersion")
-    type_field = responses.get("type")
-
-    cursor.execute("""
-        INSERT INTO reports (game_id, timestamp, date, verdict, launcher, proton_version, type)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (game_id, timestamp, date_str, verdict, launcher, proton_version, type_field))
-
-    report_id = cursor.lastrowid
-
-    notes = responses.get("notes", {})
-    combined_notes = " ".join([v for v in notes.values() if isinstance(v, str)])
-    cursor.execute("INSERT INTO notes (report_id, notes_combined) VALUES (?, ?)", (report_id, combined_notes))
-
-# Commit and close
 conn.commit()
 conn.close()
-end_time = time.time()
-elapsed = end_time - start_time
-print(f"Export complete in {elapsed:.2f} seconds")
-
-print("Export complete: data saved to protondb_reports.sqlite")
+print("All data exported to 'proton_reports.sqlite'")
 
 
