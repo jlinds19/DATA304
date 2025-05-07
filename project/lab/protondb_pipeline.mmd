@@ -1,0 +1,10 @@
+flowchart LR
+  A[Download JSON] --> B[Import into SQLite]
+  B --> C[Export `reports` → CSV]
+  C --> D[Load CSV in pandas]
+  D --> E[Clean: normalize titles, parse timestamps]
+  E --> F1[Monthly Sentiment Analysis]
+  E --> F2[OS+GPU Share for Key Games]
+  F1 --> G1[Line Plot of Avg. Sentiment by Month]
+  F2 --> G2[Bar Charts of Distro & GPU Proportions]
+

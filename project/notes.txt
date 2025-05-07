@@ -1,9 +1,0 @@
-couple of questions:
-
-what the demographics of the data sets? (system specs, os,)
-
-Games with the most reports?
-
-unix timecode to utc
-
-which linux distros to highlight? (SteamOS, Arch, Manjaro, Debian, Ubuntu, Pop!_OS, Fedora, Gentoo) 
